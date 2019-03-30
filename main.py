@@ -4,10 +4,8 @@ from __future__ import print_function
 from data_utils_sentihood import *
 from vocab_processor import *
 from sklearn import metrics
-from delayed_entnet_sentihood import Delayed_EntNet_Sentihood
-from itertools import chain
+from delayed_entnet_sentihood import DelayedEntNetSentihood
 from six.moves import range
-from collections import defaultdict
 
 import tensorflow as tf
 import numpy as np
@@ -15,7 +13,6 @@ import numpy as np
 import sys
 import random
 import logging
-import cPickle as pickle
 
 import pprint
 pp = pprint.PrettyPrinter()
@@ -79,7 +76,9 @@ if __name__ == "__main__":
         np.random.seed(FLAGS.random_state)
 
         # task data
-        (train, train_aspect_idx), (val, val_aspect_idx), (test, test_aspect_idx) = load_task(FLAGS.data_dir, aspect2idx)
+        (train, train_aspect_idx), (val, val_aspect_idx), (test, test_aspect_idx) = load_task(
+            FLAGS.data_dir, aspect2idx
+        )
 
         if FLAGS.case_folding:
             train = lower_case(train)
@@ -88,11 +87,11 @@ if __name__ == "__main__":
 
         data = train + val + test
 
-        max_sentence_len = max(map(lambda x: len(x[1]), data))
+        max_sentence_len = max(list(map(lambda x: len(x[1]), data)))
         max_sentence_len = min(FLAGS.sentence_len, max_sentence_len)
         logger.info('Max sentence len: %d' % max_sentence_len)
-        max_target_len = 1 # should be one
-        max_aspect_len = max(map(lambda x: len(x), [d[3] for d in data]))
+        max_target_len = 1  # should be one
+        max_aspect_len = max(list(map(lambda x: len(x), [d[3] for d in data])))
         assert max_aspect_len == 2
         logger.info('Max target size: %d' % max_target_len)
         logger.info('Max aspect size: %d' % max_aspect_len)
@@ -202,7 +201,7 @@ if __name__ == "__main__":
         n_positive_train = len(train_positive_idx)
         n_negative_train = len(train_negative_idx)
         n_none_train = len(train_none_idx)
-        n_train = n_negative_train # down-sampling
+        n_train = n_negative_train  # down-sampling
 
         logger.info("Positive training Size %d" % n_positive_train)
         logger.info("Negative training Size %d" % n_negative_train)
@@ -222,7 +221,7 @@ if __name__ == "__main__":
         )
         batches = [(start, end) for start, end in batches]
         
-        model = Delayed_EntNet_Sentihood(
+        model = DelayedEntNetSentihood(
             batch_size, 
             vocab_size, 
             max_target_len,

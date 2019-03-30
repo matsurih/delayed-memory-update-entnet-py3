@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import collections
 
+
 class LabelVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
     def __init__(self, support_reverse=True):
         self._mapping = {}
@@ -21,7 +22,7 @@ class LabelVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
         """
         if category not in self._mapping:
             if self._freeze:
-                assert False # should not happen
+                assert False  # should not happen
                 # return self._mapping[self._unknown_token]
             self._mapping[category] = len(self._mapping)
             if self._support_reverse:
@@ -39,6 +40,7 @@ class LabelVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
         """
         # no need to trim for label vocab
         return
+
 
 class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
     def __init__(self,
@@ -62,7 +64,6 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
     def _load_embeddings(self, in_file, binary=False):
         # emb = word2vec.Word2Vec.load_word2vec_format(in_file, binary=binary)
         with open(in_file) as in_f:
-            nb_words, nb_dim = None, None
             for line in in_f:
                 line = line.strip()
                 attrs = line.split(' ')
@@ -72,7 +73,7 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
                     self._embeddings = np.zeros((nb_words + 2, nb_dim), dtype=np.float32)
                     continue
                 word = attrs[0]
-                emb = map(float, attrs[1:])
+                emb = list(map(float, attrs[1:]))
                 self._mapping[word] = len(self._mapping) if not self._support_reverse else len(self._reverse_mapping)
                 self._embeddings[self._mapping[word], :] = emb
                 if self._support_reverse:
@@ -81,7 +82,8 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
             unk = np.mean(self._embeddings[2:], axis=0)
             self._embeddings[self._mapping[self._unknown_token]] = unk
 
-    def _get_mean_embeddings(self, emb):
+    @staticmethod
+    def _get_mean_embeddings(emb):
         syn0 = emb.syn0
         return np.mean(syn0, axis=0)
 
@@ -94,7 +96,7 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
         Args:
         freeze: True to freeze, False to unfreeze.
         """
-        self._freeze = True # should always be True after __init__
+        self._freeze = True  # should always be True after __init__
 
     def get(self, category):
         """Returns word's id in the vocabulary.
@@ -107,7 +109,7 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
         if category not in self._mapping:
             if self._freeze:
                 return self._mapping[self._unknown_token]
-            assert False # should not happey
+            assert False  # should not happen
             self._mapping[category] = len(self._mapping)
             if self._support_reverse:
                 self._reverse_mapping.append(category)
@@ -134,15 +136,18 @@ class EmbeddingVocabulary(tf.contrib.learn.preprocessing.CategoricalVocabulary):
         # don't trim embedding vocab
         return
 
+
 class EmbeddingVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProcessor):
 
-    def __init__(self,
-                 max_document_length,
-                 vocabulary,
-                 min_frequency=0,
-                 tokenizer_fn=None):
+    def __init__(
+            self,
+            max_document_length,
+            vocabulary,
+            min_frequency=0,
+            tokenizer_fn=None
+    ):
         self.max_document_length = max_document_length
-        self.vocabulary_ = vocabulary # EmbeddingVocabulary object
+        self.vocabulary_ = vocabulary  # EmbeddingVocabulary object
         self.min_frequency = min_frequency
 
     @staticmethod
@@ -163,12 +168,11 @@ class EmbeddingVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProc
         return self
 
     def transform(self, sentences):
-        '''
-        Args:
-            sentences: list of list of words
-        Returns:
-            indices: list of list of word indices
-        '''
+        """
+
+        :param sentences: list of list of words
+        :return: list of list of word indices
+        """
         word_ids = np.zeros((len(sentences), self.max_document_length), np.int32)
         for i, sentence in enumerate(sentences):
             # word_ids = np.zeros(self.max_document_length, np.int32)
@@ -192,14 +196,16 @@ class EmbeddingVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProc
             )
         return output
 
+
 class LabelVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProcessor):
 
-    def __init__(self,
-                #  max_document_length,
-                 vocabulary,
-                 min_frequency=0,
-                 tokenizer_fn=None):
-        self.vocabulary_ = vocabulary # EmbeddingVocabulary object
+    def __init__(
+            self,
+            vocabulary,
+            min_frequency=0,
+            tokenizer_fn=None
+    ):
+        self.vocabulary_ = vocabulary  # EmbeddingVocabulary object
         self.min_frequency = min_frequency
 
     @staticmethod
@@ -211,7 +217,7 @@ class LabelVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProcesso
     def fit(self, sentences, unused_y=None):
         # do nothing given that the embeddings have already been
         # initialized in EmbeddingVocabulary
-        for label in sentences:
+        for token in sentences:
             self.vocabulary_.add(token)
         if self.min_frequency > 0:
             self.vocabulary_.trim(self.min_frequency)
@@ -219,12 +225,10 @@ class LabelVocabularyProcessor(tf.contrib.learn.preprocessing.VocabularyProcesso
         return self
 
     def transform(self, sentences):
-        '''
-        Args:
-            sentences: list of list of words
-        Returns:
-            indices: list of list of word indices
-        '''
+        """
+        :param sentences: list of list of words
+        :return: list of list of word indices
+        """
         label_ids = np.full((len(sentences)), -1, dtype=np.int32)
         for i, label in enumerate(sentences):
             label_ids[i] = self.vocabulary_.get(label)

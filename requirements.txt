@@ -1,0 +1,5 @@
+nltk
+numpy
+six
+sklearn
+tensorflow
