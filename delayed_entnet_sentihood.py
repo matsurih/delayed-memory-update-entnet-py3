@@ -455,7 +455,7 @@ class DelayedEntNetSentihood(object):
                 recurrent_initializer=self._init,
                 activation=activation,
             )
-            initial_state_fw = cell_fw.zero_state(batch_size, tf.float32)
+            initial_state_fw = cell_fw.zero_state(batch_size)
             sentences_emb_shape = sentences_emb.get_shape()
             cell_fw = tf.contrib.rnn.DropoutWrapper(
                 cell=cell_fw,
@@ -475,7 +475,7 @@ class DelayedEntNetSentihood(object):
                 recurrent_initializer=self._init,
                 activation=activation,
             )
-            initial_state_bw = cell_bw.zero_state(batch_size, tf.float32)
+            initial_state_bw = cell_bw.zero_state(batch_size)
             cell_bw = tf.contrib.rnn.DropoutWrapper(
                 cell=cell_bw,
                 input_keep_prob=entnet_input_keep_prob,
