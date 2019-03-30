@@ -2,13 +2,13 @@
 Recurrent Entity Networks with Delayed Memory Update for Targeted Aspect-based Sentiment Analysis, published at NAACL 2018
 
 ```
-Python-2.7.12
+Python-3.7
 TensorFlow-1.4.1
 Numpy-1.14.2
 ```
 
 ```shell
-$ python main.py --embedding_file PATH/TO/GLOVE_EMBEDDING_FILE
+$ python main.py --embedding_file_path PATH/TO/GLOVE_EMBEDDING_FILE
 ```
 
 Note that the code assumes that the first line in the embedding file specifies the vocabulary size and dimension size:
