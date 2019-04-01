@@ -1,4 +1,4 @@
-# delayed-memory-update-entnet
+# delayed-memory-update-entnet-py3
 Recurrent Entity Networks with Delayed Memory Update for Targeted Aspect-based Sentiment Analysis, published at NAACL 2018
 
 ```
