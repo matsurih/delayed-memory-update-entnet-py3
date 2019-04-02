@@ -20,6 +20,7 @@ pp = pprint.PrettyPrinter()
 tf.flags.DEFINE_float("learning_rate", 0.05, "Learning rate for the optimizer.")
 tf.flags.DEFINE_float("max_grad_norm", 5.0, "Clip gradients to this norm.")
 tf.flags.DEFINE_integer("evaluation_interval", 1, "Evaluate and print results every x epochs")
+tf.flags.DEFINE_integer("save_interval", 100, "Save model every x epochs")
 tf.flags.DEFINE_integer("batch_size", 128, "Batch size for training.")
 tf.flags.DEFINE_integer("epochs", 800, "Number of epochs to train for.")
 tf.flags.DEFINE_integer("embedding_size", 20, "Embedding size for embedding matrices.")
@@ -325,3 +326,10 @@ if __name__ == "__main__":
                 logger.info('Validation Accuracy: %f' % val_acc)
                 logger.info('Test Accuracy: %f' % test_acc)
                 logger.info('-----------------------')
+
+        # saving model
+            if t % FLAGS.save_interval == 0:
+                saver = tf.train.Saver()
+                model_name = 'model/epoch_%f.model' % t
+                saver.save(sess, model_name)
+                print('saved model %f' % model_name)
